@@ -9,7 +9,19 @@ const handleDomo = (e) => {
   }
 
   sendAjax('POST', $("#domoForm").attr("action"), $("#domoForm").serialize(), function() {
-    loadDomosFromServer();
+    loadDomosFromServer(getToken());
+  });
+
+  return false;
+};
+
+const handleDomoDelete = (e) => {
+  e.preventDefault();
+
+  $("#domoMessage").animate({width:'hide'},350);
+
+  sendAjax('POST', $(e.target).attr("action"), $(e.target).serialize(), function() {
+    loadDomosFromServer(getToken());
   });
 
   return false;
@@ -28,6 +40,8 @@ const DomoForm = (props) => {
       <input id="domoName" type="text" name="name" placeholder="Domo Name" />
       <label htmlFor="age">Age: </label>
       <input id="domoAge" type="text" name="age" placeholder="Domo Age" />
+      <label htmlFor="description">Description: </label>
+      <input id="domoDescription" type="text" name="description" placeholder="Domo Description" />
       <input type="hidden" name="_csrf" value={props.csrf} />
       <input className="makeDomoSubmit" type="submit" value="Make Domo" />
     </form>
@@ -49,6 +63,17 @@ const DomoList = function(props) {
         <img src="/assets/img/domoface.jpeg" alt="domo face" className="domoFace" />
         <h3 className="domoName"> Name: {domo.name} </h3>
         <h3 className="domoAge"> Age: {domo.age} </h3>
+        <p className="domoDescription"> Description: {domo.description} </p>
+        <form
+          onSubmit={handleDomoDelete}
+          action="/deleteDomo"
+          method="POST"
+          className="domoDelete"
+        >
+          <input type="hidden" name="domoId" value={domo._id} />
+          <input type="hidden" name="_csrf" value={props.csrf} />
+          <button type="submit">Delete Domo</button>
+        </form>
       </div>
     );
   });
@@ -60,10 +85,10 @@ const DomoList = function(props) {
   )
 };
 
-const loadDomosFromServer = () => {
+const loadDomosFromServer = (csrf) => {
   sendAjax('GET', '/getDomos', null, (data) => {
     ReactDOM.render(
-      <DomoList domos={data.domos} />,
+      <DomoList domos={data.domos} csrf={csrf} />,
       document.querySelector("#domos")
     );
   });
@@ -80,7 +105,7 @@ const setup = function(csrf) {
     document.querySelector("#domos")
   );
 
-  loadDomosFromServer();
+  loadDomosFromServer(csrf);
 };
 
 const getToken = () => {

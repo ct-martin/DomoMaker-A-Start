@@ -23,6 +23,13 @@ const DomoSchema = new mongoose.Schema({
     required: true,
   },
 
+  description: {
+    type: String,
+    required: true,
+    trim: true,
+    set: setName,
+  },
+
   owner: {
     type: mongoose.Schema.ObjectId,
     required: true,
@@ -45,7 +52,16 @@ DomoSchema.statics.findByOwner = (ownerId, callback) => {
     owner: convertId(ownerId),
   };
 
-  return DomoModel.find(search).select('name age').exec(callback);
+  return DomoModel.find(search).select('name age description').exec(callback);
+};
+
+DomoSchema.statics.delete = (ownerId, domoId, callback) => {
+  const search = {
+    owner: convertId(ownerId),
+    _id: domoId,
+  };
+
+  return DomoModel.remove(search).exec(callback);
 };
 
 DomoModel = mongoose.model('Domo', DomoSchema);
